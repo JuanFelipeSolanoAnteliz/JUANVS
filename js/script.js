@@ -1,5 +1,8 @@
+// URL del API
+const API_URL = "https://6687db1d0bc7155dc01962d7.mockapi.io/ecomerce"
+
 // Almacenamiento de registros
-const registros = JSON.parse(localStorage.getItem("registros")) || []
+let registros = []
 
 // Referencias a elementos del DOM
 const form = document.getElementById("tapas-form")
@@ -7,6 +10,26 @@ const registrosBody = document.getElementById("registros-body")
 
 // Constante para el número de tapas por promoción
 const TAPAS_POR_PROMOCION = 25
+
+// Función para cargar los registros desde la API
+async function cargarRegistros() {
+  const loadingIndicator = document.getElementById("loading-indicator")
+  loadingIndicator.classList.add("loading")
+
+  try {
+    const response = await fetch(API_URL)
+    if (!response.ok) {
+      throw new Error("Error al cargar los datos")
+    }
+    registros = await response.json()
+    mostrarRegistros()
+  } catch (error) {
+    console.error("Error:", error)
+    alert("No se pudieron cargar los registros. Por favor, intente de nuevo más tarde.")
+  } finally {
+    loadingIndicator.classList.remove("loading")
+  }
+}
 
 // Función para calcular el total de tapas basado en el número de promociones
 function calcularTotalTapas() {
@@ -46,12 +69,22 @@ function calcularTapaRestante() {
   document.getElementById("total_tapas").value = totalTapas
 }
 
-// Función para mostrar los registros en la tabla
+// Modificar la función mostrarRegistros para incluir los totales
 function mostrarRegistros() {
   registrosBody.innerHTML = ""
 
-  registros.forEach((registro, index) => {
+  // Variables para calcular los totales
+  let totalTapasPlastico = 0
+  let totalTapasMetalica = 0
+  let totalTapasGeneral = 0
+
+  registros.forEach((registro) => {
     const row = document.createElement("tr")
+
+    // Sumar a los totales
+    totalTapasPlastico += Number.parseInt(registro.tapas_plastico) || 0
+    totalTapasMetalica += Number.parseInt(registro.tapas_metalica) || 0
+    totalTapasGeneral += Number.parseInt(registro.total_tapas) || 0
 
     row.innerHTML = `
             <td>${registro.ruta}</td>
@@ -60,24 +93,36 @@ function mostrarRegistros() {
             <td>${registro.tapas_metalica}</td>
             <td>${registro.total_tapas}</td>
             <td>
-                <button class="btn-delete" data-index="${index}">Eliminar</button>
+                <button class="btn-delete" data-id="${registro.id}">Eliminar</button>
             </td>
         `
 
     registrosBody.appendChild(row)
   })
 
+  // Agregar fila de totales
+  const totalRow = document.createElement("tr")
+  totalRow.className = "fila-totales"
+  totalRow.innerHTML = `
+        <td colspan="2"><strong>TOTALES</strong></td>
+        <td><strong>${totalTapasPlastico}</strong></td>
+        <td><strong>${totalTapasMetalica}</strong></td>
+        <td><strong>${totalTapasGeneral}</strong></td>
+        <td></td>
+    `
+  registrosBody.appendChild(totalRow)
+
   // Agregar event listeners a los botones de eliminar
   document.querySelectorAll(".btn-delete").forEach((button) => {
     button.addEventListener("click", function () {
-      const index = this.getAttribute("data-index")
-      eliminarRegistro(index)
+      const id = this.getAttribute("data-id")
+      eliminarRegistro(id)
     })
   })
 }
 
 // Función para agregar un nuevo registro
-function agregarRegistro(e) {
+async function agregarRegistro(e) {
   e.preventDefault()
 
   const ruta = document.getElementById("ruta").value
@@ -111,26 +156,65 @@ function agregarRegistro(e) {
     total_tapas: totalTapas,
   }
 
-  // Agregar al array y guardar en localStorage
-  registros.push(nuevoRegistro)
-  localStorage.setItem("registros", JSON.stringify(registros))
+  try {
+    // Mostrar indicador de carga
+    const submitBtn = form.querySelector(".btn-submit")
+    const originalText = submitBtn.textContent
+    submitBtn.textContent = "Guardando..."
+    submitBtn.disabled = true
 
-  // Actualizar la tabla y limpiar el formulario
-  mostrarRegistros()
-  form.reset()
-  document.getElementById("tapas_plastico").value = ""
-  document.getElementById("tapas_metalica").value = ""
-  document.getElementById("total_tapas").value = ""
+    // Enviar datos a la API
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(nuevoRegistro),
+    })
 
-  alert("Registro guardado con éxito!")
+    if (!response.ok) {
+      throw new Error("Error al guardar el registro")
+    }
+
+    // Recargar los registros desde la API
+    await cargarRegistros()
+
+    // Limpiar el formulario
+    form.reset()
+    document.getElementById("tapas_plastico").value = ""
+    document.getElementById("tapas_metalica").value = ""
+    document.getElementById("total_tapas").value = ""
+
+    alert("Registro guardado con éxito!")
+  } catch (error) {
+    console.error("Error:", error)
+    alert("No se pudo guardar el registro. Por favor, intente de nuevo más tarde.")
+  } finally {
+    // Restaurar el botón
+    const submitBtn = form.querySelector(".btn-submit")
+    submitBtn.textContent = "Guardar Registro"
+    submitBtn.disabled = false
+  }
 }
 
 // Función para eliminar un registro
-function eliminarRegistro(index) {
+async function eliminarRegistro(id) {
   if (confirm("¿Está seguro de que desea eliminar este registro?")) {
-    registros.splice(index, 1)
-    localStorage.setItem("registros", JSON.stringify(registros))
-    mostrarRegistros()
+    try {
+      const response = await fetch(`${API_URL}/${id}`, {
+        method: "DELETE",
+      })
+
+      if (!response.ok) {
+        throw new Error("Error al eliminar el registro")
+      }
+
+      // Recargar los registros desde la API
+      await cargarRegistros()
+    } catch (error) {
+      console.error("Error:", error)
+      alert("No se pudo eliminar el registro. Por favor, intente de nuevo más tarde.")
+    }
   }
 }
 
@@ -139,7 +223,7 @@ form.addEventListener("submit", agregarRegistro)
 
 // Inicializar la tabla al cargar la página
 document.addEventListener("DOMContentLoaded", () => {
-  mostrarRegistros()
+  cargarRegistros()
 
   // Agregar event listeners para los radio buttons
   document.querySelectorAll('input[name="tipo-tapa"]').forEach((radio) => {
