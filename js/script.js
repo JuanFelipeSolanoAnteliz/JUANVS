@@ -74,6 +74,7 @@ function mostrarRegistros() {
   registrosBody.innerHTML = ""
 
   // Variables para calcular los totales
+  let totalPromociones = 0
   let totalTapasPlastico = 0
   let totalTapasMetalica = 0
   let totalTapasGeneral = 0
@@ -82,6 +83,7 @@ function mostrarRegistros() {
     const row = document.createElement("tr")
 
     // Sumar a los totales
+    totalPromociones += Number.parseInt(registro.n_promociones) || 0
     totalTapasPlastico += Number.parseInt(registro.tapas_plastico) || 0
     totalTapasMetalica += Number.parseInt(registro.tapas_metalica) || 0
     totalTapasGeneral += Number.parseInt(registro.total_tapas) || 0
@@ -104,7 +106,8 @@ function mostrarRegistros() {
   const totalRow = document.createElement("tr")
   totalRow.className = "fila-totales"
   totalRow.innerHTML = `
-        <td colspan="2"><strong>TOTALES</strong></td>
+        <td><strong>TOTALES</strong></td>
+        <td><strong>${totalPromociones}</strong></td>
         <td><strong>${totalTapasPlastico}</strong></td>
         <td><strong>${totalTapasMetalica}</strong></td>
         <td><strong>${totalTapasGeneral}</strong></td>
