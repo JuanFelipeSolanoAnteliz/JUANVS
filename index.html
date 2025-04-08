@@ -88,6 +88,64 @@
             </table>
         </div>
     </div>
+    
+    <!-- Modal para editar registros -->
+    <div id="edit-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Editar Registro</h2>
+            <form id="edit-form">
+                <input type="hidden" id="edit-record-id">
+                <input type="hidden" id="edit-original-ruta">
+                <input type="hidden" id="edit-original-promociones">
+                
+                <div class="form-group">
+                    <label for="edit-ruta">Ruta:</label>
+                    <input type="text" id="edit-ruta" required>
+                </div>
+                
+                <div class  id="edit-ruta" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit-n-promociones">Número de Promociones:</label>
+                    <input type="number" id="edit-n-promociones" min="0" oninput="calcularCambioPromociones()">
+                </div>
+                
+                <div id="ajuste-tapas-container" style="display: none;">
+                    <div class="form-group">
+                        <label>Ajuste de Tapas:</label>
+                        <p id="mensaje-ajuste"></p>
+                        <div class="radio-group">
+                            <input type="radio" id="edit-ajuste-plastico" name="edit-tipo-ajuste" value="plastico" checked>
+                            <label for="edit-ajuste-plastico">Mantener Tapas Plástico</label>
+                            
+                            <input type="radio" id="edit-ajuste-metalica" name="edit-tipo-ajuste" value="metalica">
+                            <label for="edit-ajuste-metalica">Mantener Tapas Metálicas</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit-tapas-plastico">Tapas Plástico:</label>
+                    <input type="number" id="edit-tapas-plastico">
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit-tapas-metalica">Tapas Metálicas:</label>
+                    <input type="number" id="edit-tapas-metalica">
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit-total-tapas">Total Tapas:</label>
+                    <input type="number" id="edit-total-tapas" readonly>
+                </div>
+                
+                <button type="submit" class="btn-submit">Guardar Cambios</button>
+            </form>
+        </div>
+    </div>
+    
 </body>
 </html>
 

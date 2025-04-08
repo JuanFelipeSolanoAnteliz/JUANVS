@@ -119,18 +119,31 @@ tr:hover {
   background-color: #f5f5f5;
 }
 
-.btn-delete {
-  background-color: #e74c3c;
+.btn-delete,
+.btn-edit {
   color: white;
   border: none;
   padding: 6px 12px;
   border-radius: 4px;
   cursor: pointer;
   transition: background-color 0.3s;
+  margin-right: 5px;
+}
+
+.btn-delete {
+  background-color: #e74c3c;
 }
 
 .btn-delete:hover {
   background-color: #c0392b;
+}
+
+.btn-edit {
+  background-color: #f39c12;
+}
+
+.btn-edit:hover {
+  background-color: #d35400;
 }
 
 /* Agregar estilos para el indicador de carga */
@@ -158,9 +171,72 @@ tr:hover {
   padding: 15px;
 }
 
+/* Estilos para el modal */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+  background-color: #fff;
+  margin: 10% auto;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  width: 80%;
+  max-width: 600px;
+  position: relative;
+  animation: modalFadeIn 0.3s;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.close-modal {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  font-size: 28px;
+  font-weight: bold;
+  color: #aaa;
+  cursor: pointer;
+}
+
+.close-modal:hover {
+  color: #333;
+}
+
+#mensaje-ajuste {
+  background-color: #fff8e1;
+  padding: 10px;
+  border-left: 4px solid #ffc107;
+  margin-bottom: 15px;
+}
+
+.acciones-container {
+  display: flex;
+  gap: 5px;
+}
+
 @media (max-width: 768px) {
   .form-container,
-  .table-container {
+  .table-container,
+  .modal-content {
     padding: 15px;
   }
 
@@ -168,5 +244,9 @@ tr:hover {
     flex-direction: column;
     gap: 10px;
   }
-}
 
+  .modal-content {
+    width: 95%;
+    margin: 5% auto;
+  }
+}
