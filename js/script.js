@@ -11,8 +11,9 @@ const modal = document.getElementById("edit-modal")
 const closeModalBtn = document.querySelector(".close-modal")
 const editForm = document.getElementById("edit-form")
 
-// Constante para el número de tapas por promoción
+// Constantes para los cálculos
 const TAPAS_POR_PROMOCION = 25
+const TAPAS_POR_BOTELLA = 5
 
 // Función para cargar los registros desde la API
 async function cargarRegistros() {
@@ -42,10 +43,12 @@ async function cargarRegistros() {
   }
 }
 
-// Función para calcular el total de tapas basado en el número de promociones
+// Función para calcular el total de tapas basado en el número de promociones y botellas
 function calcularTotalTapas() {
   const nPromociones = Number.parseInt(document.getElementById("n_promociones").value) || 0
-  const totalTapas = nPromociones * TAPAS_POR_PROMOCION
+  const nBotellas = Number.parseInt(document.getElementById("n_botellas").value) || 0
+
+  const totalTapas = nPromociones * TAPAS_POR_PROMOCION + nBotellas * TAPAS_POR_BOTELLA
   document.getElementById("total_tapas").value = totalTapas
 
   // Limpiar los campos de tapas específicas
@@ -57,12 +60,13 @@ function calcularTotalTapas() {
 // Función para calcular la cantidad de tapas restantes
 function calcularTapaRestante() {
   const nPromociones = Number.parseInt(document.getElementById("n_promociones").value) || 0
-  const totalTapas = nPromociones * TAPAS_POR_PROMOCION
+  const nBotellas = Number.parseInt(document.getElementById("n_botellas").value) || 0
+  const totalTapas = nPromociones * TAPAS_POR_PROMOCION + nBotellas * TAPAS_POR_BOTELLA
   const tapasIngresadas = Number.parseInt(document.getElementById("tapas_ingresadas").value) || 0
 
   // Verificar que no se ingresen más tapas que el total
   if (tapasIngresadas > totalTapas) {
-    alert(`No puede ingresar más de ${totalTapas} tapas para ${nPromociones} promociones.`)
+    alert(`No puede ingresar más de ${totalTapas} tapas para ${nPromociones} promociones y ${nBotellas} botellas.`)
     document.getElementById("tapas_ingresadas").value = totalTapas
     return calcularTapaRestante()
   }
@@ -80,12 +84,13 @@ function calcularTapaRestante() {
   document.getElementById("total_tapas").value = totalTapas
 }
 
-// Modificar la función mostrarRegistros para incluir los totales y botones de editar
+// Modificar la función mostrarRegistros para incluir los totales, botellas y botones de editar
 function mostrarRegistros() {
   registrosBody.innerHTML = ""
 
   // Variables para calcular los totales
   let totalPromociones = 0
+  let totalBotellas = 0
   let totalTapasPlastico = 0
   let totalTapasMetalica = 0
   let totalTapasGeneral = 0
@@ -95,6 +100,7 @@ function mostrarRegistros() {
 
     // Sumar a los totales
     totalPromociones += Number.parseInt(registro.n_promociones) || 0
+    totalBotellas += Number.parseInt(registro.n_botellas) || 0
     totalTapasPlastico += Number.parseInt(registro.tapas_plastico) || 0
     totalTapasMetalica += Number.parseInt(registro.tapas_metalica) || 0
     totalTapasGeneral += Number.parseInt(registro.total_tapas) || 0
@@ -103,6 +109,7 @@ function mostrarRegistros() {
     row.innerHTML = `
       <td>${registro.ruta}</td>
       <td>${registro.n_promociones}</td>
+      <td>${registro.n_botellas || 0}</td>
       <td>${registro.tapas_plastico}</td>
       <td>${registro.tapas_metalica}</td>
       <td>${registro.total_tapas}</td>
@@ -121,6 +128,7 @@ function mostrarRegistros() {
   totalRow.innerHTML = `
     <td><strong>TOTALES</strong></td>
     <td><strong>${totalPromociones}</strong></td>
+    <td><strong>${totalBotellas}</strong></td>
     <td><strong>${totalTapasPlastico}</strong></td>
     <td><strong>${totalTapasMetalica}</strong></td>
     <td><strong>${totalTapasGeneral}</strong></td>
@@ -162,6 +170,7 @@ function abrirModalEdicion(id) {
   document.getElementById("edit-original-promociones").value = registro.n_promociones
   document.getElementById("edit-ruta").value = registro.ruta
   document.getElementById("edit-n-promociones").value = registro.n_promociones
+  document.getElementById("edit-n-botellas").value = registro.n_botellas || 0
   document.getElementById("edit-tapas-plastico").value = registro.tapas_plastico
   document.getElementById("edit-tapas-metalica").value = registro.tapas_metalica
   document.getElementById("edit-total-tapas").value = registro.total_tapas
@@ -173,13 +182,14 @@ function abrirModalEdicion(id) {
   modal.style.display = "block"
 }
 
-// Función para calcular los cambios cuando se modifica el número de promociones en el modal
-function calcularCambioPromociones() {
+// Función para calcular los cambios cuando se modifica el número de promociones o botellas en el modal
+function calcularCambioPromocionesBotellas() {
   const originalPromociones = Number.parseInt(document.getElementById("edit-original-promociones").value) || 0
   const nuevasPromociones = Number.parseInt(document.getElementById("edit-n-promociones").value) || 0
+  const nuevasBotellas = Number.parseInt(document.getElementById("edit-n-botellas").value) || 0
 
   const originalTotalTapas = originalPromociones * TAPAS_POR_PROMOCION
-  const nuevoTotalTapas = nuevasPromociones * TAPAS_POR_PROMOCION
+  const nuevoTotalTapas = nuevasPromociones * TAPAS_POR_PROMOCION + nuevasBotellas * TAPAS_POR_BOTELLA
 
   const tapasPlastico = Number.parseInt(document.getElementById("edit-tapas-plastico").value) || 0
   const tapasMetalica = Number.parseInt(document.getElementById("edit-tapas-metalica").value) || 0
@@ -190,11 +200,11 @@ function calcularCambioPromociones() {
   const ajusteContainer = document.getElementById("ajuste-tapas-container")
   const mensajeAjuste = document.getElementById("mensaje-ajuste")
 
-  if (nuevasPromociones !== originalPromociones) {
-    // Si cambian las promociones, preguntar qué tipo de tapa mantener igual
+  if (nuevoTotalTapas !== originalTotalTapas) {
+    // Si cambia el total de tapas, preguntar qué tipo de tapa mantener igual
     ajusteContainer.style.display = "block"
 
-    if (nuevasPromociones > originalPromociones) {
+    if (nuevoTotalTapas > originalTotalTapas) {
       mensajeAjuste.textContent = `Se agregarán ${nuevoTotalTapas - originalTotalTapas} tapas. Seleccione qué tipo de tapa mantener igual:`
     } else {
       mensajeAjuste.textContent = `Se quitarán ${originalTotalTapas - nuevoTotalTapas} tapas. Seleccione qué tipo de tapa mantener igual:`
@@ -230,7 +240,7 @@ function calcularCambioPromociones() {
       document.getElementById("edit-tapas-metalica").value = tapasMetalica
     }
   } else {
-    // Si no hay cambio en el número de promociones, ocultar el ajuste
+    // Si no hay cambio en el total de tapas, ocultar el ajuste
     ajusteContainer.style.display = "none"
   }
 }
@@ -238,12 +248,15 @@ function calcularCambioPromociones() {
 // Función para calcular cuando se modifica la cantidad de tapas plásticas
 function calcularCambioTapasPlastico() {
   const nPromociones = Number.parseInt(document.getElementById("edit-n-promociones").value) || 0
-  const totalTapas = nPromociones * TAPAS_POR_PROMOCION
+  const nBotellas = Number.parseInt(document.getElementById("edit-n-botellas").value) || 0
+  const totalTapas = nPromociones * TAPAS_POR_PROMOCION + nBotellas * TAPAS_POR_BOTELLA
   const tapasPlastico = Number.parseInt(document.getElementById("edit-tapas-plastico").value) || 0
 
   // Verificar que no se ingresen más tapas plásticas que el total
   if (tapasPlastico > totalTapas) {
-    alert(`No puede ingresar más de ${totalTapas} tapas plásticas para ${nPromociones} promociones.`)
+    alert(
+      `No puede ingresar más de ${totalTapas} tapas plásticas para ${nPromociones} promociones y ${nBotellas} botellas.`,
+    )
     document.getElementById("edit-tapas-plastico").value = totalTapas
     document.getElementById("edit-tapas-metalica").value = 0
     return
@@ -256,12 +269,15 @@ function calcularCambioTapasPlastico() {
 // Función para calcular cuando se modifica la cantidad de tapas metálicas
 function calcularCambioTapasMetalica() {
   const nPromociones = Number.parseInt(document.getElementById("edit-n-promociones").value) || 0
-  const totalTapas = nPromociones * TAPAS_POR_PROMOCION
+  const nBotellas = Number.parseInt(document.getElementById("edit-n-botellas").value) || 0
+  const totalTapas = nPromociones * TAPAS_POR_PROMOCION + nBotellas * TAPAS_POR_BOTELLA
   const tapasMetalica = Number.parseInt(document.getElementById("edit-tapas-metalica").value) || 0
 
   // Verificar que no se ingresen más tapas metálicas que el total
   if (tapasMetalica > totalTapas) {
-    alert(`No puede ingresar más de ${totalTapas} tapas metálicas para ${nPromociones} promociones.`)
+    alert(
+      `No puede ingresar más de ${totalTapas} tapas metálicas para ${nPromociones} promociones y ${nBotellas} botellas.`,
+    )
     document.getElementById("edit-tapas-metalica").value = totalTapas
     document.getElementById("edit-tapas-plastico").value = 0
     return
@@ -271,7 +287,7 @@ function calcularCambioTapasMetalica() {
   document.getElementById("edit-tapas-plastico").value = totalTapas - tapasMetalica
 }
 
-// Función para guardar los cambios del registro editado - MODIFICADA para usar ruta en lugar de id
+// Función para guardar los cambios del registro editado
 async function guardarCambiosRegistro(e) {
   e.preventDefault()
 
@@ -279,6 +295,7 @@ async function guardarCambiosRegistro(e) {
   const originalRuta = document.getElementById("edit-original-ruta").value
   const ruta = document.getElementById("edit-ruta").value
   const nPromociones = Number.parseInt(document.getElementById("edit-n-promociones").value) || 0
+  const nBotellas = Number.parseInt(document.getElementById("edit-n-botellas").value) || 0
   const tapasPlastico = Number.parseInt(document.getElementById("edit-tapas-plastico").value) || 0
   const tapasMetalica = Number.parseInt(document.getElementById("edit-tapas-metalica").value) || 0
   const totalTapas = Number.parseInt(document.getElementById("edit-total-tapas").value) || 0
@@ -289,8 +306,13 @@ async function guardarCambiosRegistro(e) {
     return
   }
 
-  if (nPromociones <= 0) {
-    alert("El número de promociones debe ser mayor a 0.")
+  if (nPromociones < 0) {
+    alert("El número de promociones no puede ser negativo.")
+    return
+  }
+
+  if (nBotellas < 0) {
+    alert("El número de botellas no puede ser negativo.")
     return
   }
 
@@ -313,6 +335,7 @@ async function guardarCambiosRegistro(e) {
   const registroActualizado = {
     ruta,
     n_promociones: nPromociones,
+    n_botellas: nBotellas,
     tapas_plastico: tapasPlastico,
     tapas_metalica: tapasMetalica,
     total_tapas: totalTapas,
@@ -391,6 +414,7 @@ async function agregarRegistro(e) {
 
   const ruta = document.getElementById("ruta").value
   const nPromociones = Number.parseInt(document.getElementById("n_promociones").value) || 0
+  const nBotellas = Number.parseInt(document.getElementById("n_botellas").value) || 0
   const tapasPlastico = Number.parseInt(document.getElementById("tapas_plastico").value) || 0
   const tapasMetalica = Number.parseInt(document.getElementById("tapas_metalica").value) || 0
   const totalTapas = Number.parseInt(document.getElementById("total_tapas").value) || 0
@@ -401,8 +425,13 @@ async function agregarRegistro(e) {
     return
   }
 
-  if (nPromociones <= 0) {
-    alert("El número de promociones debe ser mayor a 0.")
+  if (nPromociones < 0) {
+    alert("El número de promociones no puede ser negativo.")
+    return
+  }
+
+  if (nBotellas < 0) {
+    alert("El número de botellas no puede ser negativo.")
     return
   }
 
@@ -425,6 +454,7 @@ async function agregarRegistro(e) {
   const nuevoRegistro = {
     ruta,
     n_promociones: nPromociones,
+    n_botellas: nBotellas,
     tapas_plastico: tapasPlastico,
     tapas_metalica: tapasMetalica,
     total_tapas: totalTapas,
@@ -476,7 +506,7 @@ async function agregarRegistro(e) {
   }
 }
 
-// Función para eliminar un registro - MODIFICADA para usar ruta en lugar de id
+// Función para eliminar un registro
 async function eliminarRegistro(ruta) {
   if (!ruta) {
     console.error("Error: Ruta no válida para eliminar")
@@ -580,10 +610,15 @@ document.addEventListener("DOMContentLoaded", () => {
     })
   })
 
-  // Agregar event listener para el cambio de promociones en el formulario de edición
-  document.getElementById("edit-n-promociones").addEventListener("input", calcularCambioPromociones)
+  // Agregar event listeners para el cambio de promociones y botellas en el formulario de edición
+  document.getElementById("edit-n-promociones").addEventListener("input", calcularCambioPromocionesBotellas)
+  document.getElementById("edit-n-botellas").addEventListener("input", calcularCambioPromocionesBotellas)
 
   // Agregar event listeners para la edición directa de tapas
   document.getElementById("edit-tapas-plastico").addEventListener("input", calcularCambioTapasPlastico)
   document.getElementById("edit-tapas-metalica").addEventListener("input", calcularCambioTapasMetalica)
+
+  // Agregar event listeners para el cambio de promociones y botellas en el formulario principal
+  document.getElementById("n_promociones").addEventListener("input", calcularTotalTapas)
+  document.getElementById("n_botellas").addEventListener("input", calcularTotalTapas)
 })

@@ -1,20 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cocacola tracking</title>
-    <link rel="stylesheet" href="./css/style.css">
-    <script src="./js/script.js" defer> </script>
-</head>
-<body> 
-    <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Gestión de Tapas</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="./css/style.css">
+    <script src="./js/script.js" defer></script>
 </head>
 <body>
     <div class="container">
@@ -31,6 +22,11 @@
                 <div class="form-group">
                     <label for="n_promociones">Número de Promociones:</label>
                     <input type="number" id="n_promociones" min="0" placeholder="Ej: 20" oninput="calcularTotalTapas()">
+                </div>
+                
+                <div class="form-group">
+                    <label for="n_botellas">Número de Botellas:</label>
+                    <input type="number" id="n_botellas" min="0" placeholder="Ej: 10" oninput="calcularTotalTapas()">
                 </div>
                 
                 <div class="form-group">
@@ -76,6 +72,7 @@
                     <tr>
                         <th>Ruta</th>
                         <th>Promociones</th>
+                        <th>Botellas</th>
                         <th>Tapas Plástico</th>
                         <th>Tapas Metálicas</th>
                         <th>Total Tapas</th>
@@ -104,12 +101,14 @@
                     <input type="text" id="edit-ruta" required>
                 </div>
                 
-                <div class  id="edit-ruta" required>
+                <div class="form-group">
+                    <label for="edit-n-promociones">Número de Promociones:</label>
+                    <input type="number" id="edit-n-promociones" min="0">
                 </div>
                 
                 <div class="form-group">
-                    <label for="edit-n-promociones">Número de Promociones:</label>
-                    <input type="number" id="edit-n-promociones" min="0" oninput="calcularCambioPromociones()">
+                    <label for="edit-n-botellas">Número de Botellas:</label>
+                    <input type="number" id="edit-n-botellas" min="0">
                 </div>
                 
                 <div id="ajuste-tapas-container" style="display: none;">
@@ -146,9 +145,5 @@
         </div>
     </div>
     
-</body>
-</html>
-
-
 </body>
 </html>
